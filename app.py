@@ -1401,6 +1401,82 @@ with left_col:
             os.remove(tmp) if os.path.exists(tmp) else None
             st.success("✅ Video processing completed!")
     
+    elif option == "Camera":
+        st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
+        
+        st.info("📷 Browser se camera allow karein. Fire aur Smoke detection real-time mein hoga.")
+
+        RTC_CONFIGURATION = RTCConfiguration(
+            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+        )
+
+        def video_frame_callback(frame):
+            try:
+                # Convert to OpenCV format
+                img = frame.to_ndarray(format="bgr24")
+
+                # Important: Make a copy to avoid issues
+                img_copy = img.copy()
+
+                # Process the frame
+                processed_frame, det = process_frame(img_copy)
+
+                # Update detection counters
+                ts = datetime.now().strftime("%H:%M:%S")
+
+                if det.get('fire', False):
+                    st.session_state.fire += 1
+                    st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames})
+
+                if det.get('smoke', False):
+                    st.session_state.smoke += 1
+                    st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames})
+
+                st.session_state.frames += 1
+                st.session_state.fire_history.append(st.session_state.fire)
+                st.session_state.smoke_history.append(st.session_state.smoke)
+                st.session_state.time_history.append(ts)
+
+                # Return the processed frame (this should show the video)
+                return processed_frame
+
+            except Exception as e:
+                # Agar koi error aaye to original frame return karo taaki black screen na aaye
+                print(f"Callback Error: {e}")   # Server logs mein dikhega
+                return frame.to_ndarray(format="bgr24")
+
+        # WebRTC Streamer - Improved settings
+        webrtc_ctx = webrtc_streamer(
+            key="aegis_live_camera_final",
+            mode=WebRtcMode.SENDRECV,
+            rtc_configuration=RTC_CONFIGURATION,
+            video_frame_callback=video_frame_callback,
+            media_stream_constraints={
+                "video": {
+                    "width": 640,
+                    "height": 480,
+                    "frameRate": 15
+                },
+                "audio": False
+            },
+            async_processing=True,
+            video_html_attrs={
+                "style": {
+                    "width": "100%",
+                    "border-radius": "12px",
+                    "background-color": "#000"
+                }
+            }
+        )
+
+        if webrtc_ctx.state.playing:
+            st.success("✅ Live Camera Connected — Detection Running")
+            # Light rerun for UI updates
+            time.sleep(0.35)
+            st.rerun()
+        else:
+            st.warning("Waiting for camera to start...")
+            
     # elif option == "Camera":
     #     st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
         
@@ -1459,66 +1535,66 @@ with left_col:
     #         st.success("✅ Live Camera Connected — Detection Running")
     #         time.sleep(0.5)
     #         st.rerun()
-
+   
 # Good Working
-    elif option == "Camera":
-        st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
+    # elif option == "Camera":
+    #     st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
         
-        st.info("📷 Browser se camera allow karein. Fire aur Smoke detection real-time mein hoga.")
+    #     st.info("📷 Browser se camera allow karein. Fire aur Smoke detection real-time mein hoga.")
 
-        RTC_CONFIGURATION = RTCConfiguration(
-            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-        )
+    #     RTC_CONFIGURATION = RTCConfiguration(
+    #         {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+    #     )
 
-        def video_frame_callback(frame):
-            try:
-                img = frame.to_ndarray(format="bgr24")
-                processed_frame, det = process_frame(img)
+    #     def video_frame_callback(frame):
+    #         try:
+    #             img = frame.to_ndarray(format="bgr24")
+    #             processed_frame, det = process_frame(img)
 
-                ts = datetime.now().strftime("%H:%M:%S")
+    #             ts = datetime.now().strftime("%H:%M:%S")
 
-                if det.get('fire', False):
-                    st.session_state.fire += 1
-                    st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames})
+    #             if det.get('fire', False):
+    #                 st.session_state.fire += 1
+    #                 st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames})
 
-                if det.get('smoke', False):
-                    st.session_state.smoke += 1
-                    st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames})
+    #             if det.get('smoke', False):
+    #                 st.session_state.smoke += 1
+    #                 st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames})
 
-                st.session_state.frames += 1
-                st.session_state.fire_history.append(st.session_state.fire)
-                st.session_state.smoke_history.append(st.session_state.smoke)
-                st.session_state.time_history.append(ts)
+    #             st.session_state.frames += 1
+    #             st.session_state.fire_history.append(st.session_state.fire)
+    #             st.session_state.smoke_history.append(st.session_state.smoke)
+    #             st.session_state.time_history.append(ts)
 
-                return processed_frame
+    #             return processed_frame
 
-            except Exception as e:
-                st.error(f"Processing Error: {str(e)}")
-                return frame.to_ndarray(format="bgr24")   # fallback
+    #         except Exception as e:
+    #             st.error(f"Processing Error: {str(e)}")
+    #             return frame.to_ndarray(format="bgr24")   # fallback
 
-        # WebRTC Streamer
-        webrtc_ctx = webrtc_streamer(
-            key="aegis_live_camera_v2",
-            mode=WebRtcMode.SENDRECV,
-            rtc_configuration=RTC_CONFIGURATION,
-            video_frame_callback=video_frame_callback,
-            media_stream_constraints={
-                "video": {"width": 640, "height": 480},
-                "audio": False
-            },
-            async_processing=True,
-            video_html_attrs={
-                "style": {"width": "100%", "border-radius": "12px"}
-            }
-        )
+    #     # WebRTC Streamer
+    #     webrtc_ctx = webrtc_streamer(
+    #         key="aegis_live_camera_v2",
+    #         mode=WebRtcMode.SENDRECV,
+    #         rtc_configuration=RTC_CONFIGURATION,
+    #         video_frame_callback=video_frame_callback,
+    #         media_stream_constraints={
+    #             "video": {"width": 640, "height": 480},
+    #             "audio": False
+    #         },
+    #         async_processing=True,
+    #         video_html_attrs={
+    #             "style": {"width": "100%", "border-radius": "12px"}
+    #         }
+    #     )
 
-        # Correct state checking
-        if webrtc_ctx.state.playing:
-            st.success("✅ Live Camera Connected — Detection Running")
-            time.sleep(0.4)
-            st.rerun()
-        else:
-            st.warning("Camera not started or stopped.")
+    #     # Correct state checking
+    #     if webrtc_ctx.state.playing:
+    #         st.success("✅ Live Camera Connected — Detection Running")
+    #         time.sleep(0.4)
+    #         st.rerun()
+    #     else:
+    #         st.warning("Camera not started or stopped.")
             
     # elif option == "Camera":
     #     st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
