@@ -1402,48 +1402,121 @@ with left_col:
             st.success("✅ Video processing completed!")
 
     elif option == "Camera":
-        st.info("📷 **Live Browser Camera**")
-        RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+        st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
+        
+        st.info("📷 Camera ko allow karein. Fire/Smoke detection real-time mein hoga.")
+
+        RTC_CONFIGURATION = RTCConfiguration(
+            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+        )
 
         def video_frame_callback(frame):
-            img = frame.to_ndarray(format="bgr24")
-            
-            # Process the frame with your model
-            processed_frame, det = process_frame(img)
+            try:
+                # Convert WebRTC frame to OpenCV format
+                img = frame.to_ndarray(format="bgr24")
+                
+                # Process with your detection model
+                processed_frame, det = process_frame(img)
 
-            # Update session state safely
-            ts = datetime.now().strftime("%H:%M:%S")
-            
-            if det.get('fire'):
-                st.session_state.fire += 1
-                st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames + 1})
-            
-            if det.get('smoke'):
-                st.session_state.smoke += 1
-                st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames + 1})
+                # Update counters safely
+                ts = datetime.now().strftime("%H:%M:%S")
+                
+                if det.get('fire', False):
+                    st.session_state.fire += 1
+                    st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames})
+                
+                if det.get('smoke', False):
+                    st.session_state.smoke += 1
+                    st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames})
 
-            st.session_state.frames += 1
-            st.session_state.fire_history.append(st.session_state.fire)
-            st.session_state.smoke_history.append(st.session_state.smoke)
-            st.session_state.time_history.append(ts)
+                st.session_state.frames += 1
+                st.session_state.fire_history.append(st.session_state.fire)
+                st.session_state.smoke_history.append(st.session_state.smoke)
+                st.session_state.time_history.append(ts)
 
-            return processed_frame
+                return processed_frame
 
+            except Exception as e:
+                # Agar koi error aaye to original frame return kar do (crash na ho)
+                st.error(f"Callback Error: {str(e)}")
+                return frame.to_ndarray(format="bgr24")
+
+        # WebRTC Streamer
         webrtc_ctx = webrtc_streamer(
-            key="aegis-fire-smoke-live",
+            key="aegis_live_camera",
             mode=WebRtcMode.SENDRECV,
             rtc_configuration=RTC_CONFIGURATION,
             video_frame_callback=video_frame_callback,
-            media_stream_constraints={"video": True, "audio": False},
+            media_stream_constraints={
+                "video": {
+                    "width": 640,
+                    "height": 480,
+                    "facingMode": "user"
+                },
+                "audio": False
+            },
             async_processing=True,
-            video_html_attrs={"style": {"width": "100%", "margin": "0 auto"}},
+            
+            video_html_attrs={
+                "style": {
+                    "width": "100%",
+                    "height": "auto",
+                    "border-radius": "12px"
+                }
+            }
         )
-        
+
         if webrtc_ctx.state.playing:
-            st.success("✅ Live Detection Active — Fire & Smoke being scanned in real-time")
-            # Force refresh every few seconds so charts & counters update smoothly
-            time.sleep(0.3)   # adjust if needed (smaller = faster update, but more load)
+            st.success("✅ Camera Connected & Detection Running")
+            time.sleep(0.4)
             st.rerun()
+        elif webrtc_ctx.state.stopped:
+            st.warning("Camera stopped.")  
+            
+    # elif option == "Camera":
+    #     st.info("📷 **Live Browser Camera**")
+    #     RTC_CONFIGURATION = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+
+    #     def video_frame_callback(frame):
+    #         img = frame.to_ndarray(format="bgr24")
+            
+    #         # Process the frame with your model
+    #         processed_frame, det = process_frame(img)
+
+    #         # Update session state safely
+    #         ts = datetime.now().strftime("%H:%M:%S")
+            
+    #         if det.get('fire'):
+    #             st.session_state.fire += 1
+    #             st.session_state.detection_log.append({"time": ts, "type": "🔥 Fire", "frame": st.session_state.frames + 1})
+            
+    #         if det.get('smoke'):
+    #             st.session_state.smoke += 1
+    #             st.session_state.detection_log.append({"time": ts, "type": "💨 Smoke", "frame": st.session_state.frames + 1})
+
+    #         st.session_state.frames += 1
+    #         st.session_state.fire_history.append(st.session_state.fire)
+    #         st.session_state.smoke_history.append(st.session_state.smoke)
+    #         st.session_state.time_history.append(ts)
+
+    #         return processed_frame
+
+    #     webrtc_ctx = webrtc_streamer(
+    #         key="aegis-fire-smoke-live",
+    #         mode=WebRtcMode.SENDRECV,
+    #         rtc_configuration=RTC_CONFIGURATION,
+    #         video_frame_callback=video_frame_callback,
+    #         media_stream_constraints={"video": True, "audio": False},
+    #         async_processing=True,
+    #         video_html_attrs={"style": {"width": "100%", "margin": "0 auto"}},
+    #     )
+        
+    #     if webrtc_ctx.state.playing:
+    #         st.success("✅ Live Detection Active — Fire & Smoke being scanned in real-time")
+    #         # Force refresh every few seconds so charts & counters update smoothly
+    #         time.sleep(0.3)   # adjust if needed (smaller = faster update, but more load)
+    #         st.rerun()
+   
 
 # RIGHT COLUMN
 with right_col:
