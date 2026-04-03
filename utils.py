@@ -1,6 +1,9 @@
 import os
 import time
-import simpleaudio as sa
+import pygame
+
+# Initialize pygame mixer once
+pygame.mixer.init()
 
 alarm_state = {"fire": False, "smoke": False}
 current_sound = {"fire": None, "smoke": None}
@@ -16,7 +19,7 @@ SOUND_FILES = {
 }
 
 def get_color(label):
-    return (0,0,255) if label == "fire" else (128,128,128)
+    return (0, 0, 255) if label == "fire" else (128, 128, 128)
 
 def play_sound(label):
     current_time = time.time()
@@ -36,8 +39,13 @@ def play_sound(label):
         return
     
     try:
-        wave = sa.WaveObject.from_wave_file(f"{label}_alert.wav")
-        current_sound[label] = wave.play()
+        # Stop previous sound if any
+        stop_sound(label)
+
+        # Load and play new sound
+        sound = pygame.mixer.Sound(sound_path)
+        sound.play()
+        current_sound[label] = sound
         alarm_state[label] = True
         last_play_time[label] = current_time
 
