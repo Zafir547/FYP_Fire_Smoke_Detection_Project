@@ -15,8 +15,5 @@ pygame==2.4.0
 # Messaging
 twilio==8.14.0
 
-# Audio
-simpleaudio==1.0.5
-
 # OpenGL support (fixes libGL.so.1 errors)
 pyopengl==3.1.7
