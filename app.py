@@ -391,8 +391,6 @@ with left_col:
     
     elif option == "Camera":
         st.markdown('<div class="section-header">📷 Live Camera Detection</div>', unsafe_allow_html=True)
-        
-        st.info("📷 Browser se camera allow karein. Fire aur Smoke detection real-time mein hoga.")
 
         RTC_CONFIGURATION = RTCConfiguration(
             {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
@@ -429,8 +427,7 @@ with left_col:
                 return processed_frame
 
             except Exception as e:
-                # Agar koi error aaye to original frame return karo taaki black screen na aaye
-                print(f"Callback Error: {e}")   # Server logs mein dikhega
+                print(f"Callback Error: {e}")
                 return frame.to_ndarray(format="bgr24")
 
         # WebRTC Streamer - Improved settings
