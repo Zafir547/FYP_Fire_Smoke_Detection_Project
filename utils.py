@@ -1,18 +1,15 @@
 import os
 import time
-import pygame
-
-# Initialize pygame mixer once
-pygame.mixer.init()
+import threading
+from playsound import playsound
 
 alarm_state = {"fire": False, "smoke": False}
-current_sound = {"fire": None, "smoke": None}
 
 # Beep timing control
 last_play_time = {"fire": 0, "smoke": 0}
 BEEP_INTERVAL = 2  # seconds
 
-# Sound file paths (flexible)
+# Sound file paths
 SOUND_FILES = {
     "fire": "fire_alert.wav",
     "smoke": "smoke_alert.wav"
@@ -24,39 +21,33 @@ def get_color(label):
 def play_sound(label):
     current_time = time.time()
 
-    # Prevent spam (beep interval)
+    # Prevent spam
     if current_time - last_play_time[label] < BEEP_INTERVAL:
         return
-    
-    # If already playing, skip
+
     if alarm_state[label]:
         return
-    
+
     sound_path = SOUND_FILES.get(label)
 
     if not os.path.exists(sound_path):
         print(f"[ERROR] Sound file not found: {sound_path}")
         return
-    
-    try:
-        # Stop previous sound if any
-        stop_sound(label)
 
-        # Load and play new sound
-        sound = pygame.mixer.Sound(sound_path)
-        sound.play()
-        current_sound[label] = sound
+    try:
         alarm_state[label] = True
         last_play_time[label] = current_time
+
+        # Play sound in background thread
+        threading.Thread(
+            target=playsound,
+            args=(sound_path,),
+            daemon=True
+        ).start()
 
     except Exception as e:
         print(f"[ERROR] Sound play failed ({label}):", e)
 
 def stop_sound(label):
-    try:
-        if current_sound[label]:
-            current_sound[label].stop()
-    except Exception as e:
-        print(f"[ERROR] Sound stop failed ({label}):", e)
-
+    # playsound
     alarm_state[label] = False
