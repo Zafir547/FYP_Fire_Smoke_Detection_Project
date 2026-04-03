@@ -1003,6 +1003,10 @@
 # # Footer
 # st.markdown("""
 # <div class="aegis-footer">
+#   ⚡ AEGIS AI SURVEILLANCE SYSTEMS &nbsp;·&nbsp; ZAFIR ABDULLAH &nbsp;·&nbsp;
+#   POWERED BY COMPUTER VISION
+# </div>
+# """, unsafe_allow_html=True)
 
 # Code 3
 
@@ -1450,7 +1454,4 @@ st.markdown("""
   POWERED BY COMPUTER VISION
 </div>
 """, unsafe_allow_html=True)
-  ⚡ AEGIS AI SURVEILLANCE SYSTEMS &nbsp;·&nbsp; ZAFIR ABDULLAH &nbsp;·&nbsp;
-  POWERED BY COMPUTER VISION
-</div>
-""", unsafe_allow_html=True)
+
