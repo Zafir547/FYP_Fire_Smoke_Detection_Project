@@ -13,7 +13,7 @@ APP_PASSWORD = "password"
 # Twilio SMS Config
 TWILIO_SID = "your_sid"
 TWILIO_AUTH_TOKEN = "your_auth"
-TWILIO_PHONE_NUMBER = "+your_twilio_number"
+TWILIO_PHONE_NUMBER = "your_twilio_number"
 TARGET_PHONE_NUMBER = "persoanl_number"
 
 client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
