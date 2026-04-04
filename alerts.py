@@ -8,13 +8,13 @@ from email.mime.multipart import MIMEMultipart
 # Email Config
 SENDER_EMAIL = "zafirabdullah1534@gmail.com"
 RECEIVER_EMAIL = "zafirabdullah189@gmail.com"
-APP_PASSWORD = "zlqs igwl zvie idzn"
+APP_PASSWORD = "password"
 
 # Twilio SMS Config
-TWILIO_SID = "ACc8a507c1022023e623d31f968cbd9640"
-TWILIO_AUTH_TOKEN = "2abd54ad503d946d9e9e819da7a4669f"
-TWILIO_PHONE_NUMBER = "+16625277675"
-TARGET_PHONE_NUMBER = "+923333586147"
+TWILIO_SID = "your_sid"
+TWILIO_AUTH_TOKEN = "your_auth"
+TWILIO_PHONE_NUMBER = "+your_twilio_number"
+TARGET_PHONE_NUMBER = "persoanl_number"
 
 client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
 
