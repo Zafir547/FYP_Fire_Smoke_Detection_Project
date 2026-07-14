@@ -18,7 +18,7 @@ This project strengthened my skills in:
 
 # Demo Project Images
 
-![Project Screenshot](images/image-denoised.JPG)
+![Project Screenshot](images/fire-detected.JPG)
 
 I'm looking forward to improving the dataset and model accuracy in the coming days.
 
